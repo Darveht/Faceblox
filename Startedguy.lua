@@ -649,9 +649,11 @@ function showCommentsSection(postId)
     settingsFrame.Visible = false
     commentsSection.Visible = true
     
-    -- Ocultar navbar
+    -- Ocultar navbar Y header para más espacio
     navBar.Visible = false
-    contentFrame.Size = UDim2.new(1, 0, 1, -60)
+    headerFrame.Visible = false
+    contentFrame.Size = UDim2.new(1, 0, 1, 0)
+    contentFrame.Position = UDim2.new(0, 0, 0, 0)
     
     -- Limpiar commentsSection
     for _, child in pairs(commentsSection:GetChildren()) do
@@ -689,7 +691,9 @@ function showCommentsSection(postId)
     closeBtn.MouseButton1Click:Connect(function()
         commentsSection.Visible = false
         navBar.Visible = true
+        headerFrame.Visible = true
         contentFrame.Size = UDim2.new(1, 0, 1, -140)
+        contentFrame.Position = UDim2.new(0, 0, 0, 60)
         switchView("feed")
     end)
     
@@ -1476,6 +1480,14 @@ linkProfileBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Cargar avatar automáticamente al iniciar
+spawn(function()
+    wait(1)
+    local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=150&height=150&format=png"
+    profileButton.Image = avatarUrl
+    print("Avatar cargado: " .. avatarUrl)
+end)
+
 -- Escuchar vinculación de perfil
 linkProfileEvent.OnClientEvent:Connect(function(avatarUrl)
     profileButton.Image = avatarUrl
@@ -1615,7 +1627,9 @@ function showReportModal(userId, displayName)
     reportSection.Visible = true
     
     navBar.Visible = false
-    contentFrame.Size = UDim2.new(1, 0, 1, -60)
+    headerFrame.Visible = false
+    contentFrame.Size = UDim2.new(1, 0, 1, 0)
+    contentFrame.Position = UDim2.new(0, 0, 0, 0)
     
     for _, child in pairs(reportSection:GetChildren()) do
         child:Destroy()
@@ -1647,7 +1661,9 @@ function showReportModal(userId, displayName)
     closeBtn.MouseButton1Click:Connect(function()
         reportSection.Visible = false
         navBar.Visible = true
+        headerFrame.Visible = true
         contentFrame.Size = UDim2.new(1, 0, 1, -140)
+        contentFrame.Position = UDim2.new(0, 0, 0, 60)
         switchView("discover")
     end)
     
@@ -1733,7 +1749,9 @@ function showReportModal(userId, displayName)
             wait(3)
             reportSection.Visible = false
             navBar.Visible = true
+            headerFrame.Visible = true
             contentFrame.Size = UDim2.new(1, 0, 1, -140)
+            contentFrame.Position = UDim2.new(0, 0, 0, 60)
             switchView("discover")
         else
             submitButton.Text = "Selecciona una razón"
@@ -1755,7 +1773,9 @@ function showMusicSelection()
     musicSection.Visible = true
     
     navBar.Visible = false
-    contentFrame.Size = UDim2.new(1, 0, 1, -60)
+    headerFrame.Visible = false
+    contentFrame.Size = UDim2.new(1, 0, 1, 0)
+    contentFrame.Position = UDim2.new(0, 0, 0, 0)
     
     for _, child in pairs(musicSection:GetChildren()) do
         if child ~= musicLayout then
@@ -1789,7 +1809,9 @@ function showMusicSelection()
     backBtn.MouseButton1Click:Connect(function()
         musicSection.Visible = false
         navBar.Visible = true
+        headerFrame.Visible = true
         contentFrame.Size = UDim2.new(1, 0, 1, -140)
+        contentFrame.Position = UDim2.new(0, 0, 0, 60)
         switchView("create")
     end)
     
@@ -1864,7 +1886,9 @@ function showMusicSelection()
             wait(1)
             musicSection.Visible = false
             navBar.Visible = true
+            headerFrame.Visible = true
             contentFrame.Size = UDim2.new(1, 0, 1, -140)
+            contentFrame.Position = UDim2.new(0, 0, 0, 60)
             switchView("create")
         end)
     end
