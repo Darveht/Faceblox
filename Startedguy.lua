@@ -1,4 +1,5 @@
--- Client: FaceBlox LocalScript (Versión completa mejorada)
+-- FaceBlox Client (completo) - versión con icono "Inicio" usando rbxassetid://120125722355552
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -67,6 +68,7 @@ local commentsSection
 local reportSection
 local navButtonInstances = {}
 local selectedMusicId = ""
+local logoLabel -- Variable para acceder al logo más tarde
 
 -- map de widgets de posts para updates en tiempo real
 local postWidgets = {}
@@ -120,7 +122,7 @@ headerGradient.Rotation = 90
 headerGradient.Parent = headerFrame
 
 -- Logo FaceBlox
-local logoLabel = Instance.new("TextLabel")
+logoLabel = Instance.new("TextLabel")
 logoLabel.Size = UDim2.new(0, 150, 1, 0)
 logoLabel.Position = UDim2.new(0, 10, 0, 0)
 logoLabel.BackgroundTransparency = 1
@@ -320,7 +322,7 @@ navBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 navBar.BorderSizePixel = 0
 navBar.Parent = mainFrame
 
--- Botones de navegación
+-- Botones de navegación (datos)
 local navButtons = {
 {name = "Inicio", icon = "🏠", view = "feed"},
 {name = "Descubrir", icon = "🔍", view = "discover"},
@@ -328,17 +330,53 @@ local navButtons = {
 {name = "Perfil", icon = "👤", view = "settings"}
 }
 
+-- <<< CAMBIO: creación completa de botones de navegación con ImageLabel para "Inicio" >>>
 for i, buttonData in ipairs(navButtons) do
     local navButton = Instance.new("TextButton")
     navButton.Size = UDim2.new(1/#navButtons, 0, 1, 0)
     navButton.Position = UDim2.new((i-1)/#navButtons, 0, 0, 0)
     navButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     navButton.BorderSizePixel = 0
-    navButton.Text = buttonData.icon .. "\n" .. buttonData.name
-    navButton.TextColor3 = Color3.new(1, 1, 1)
-    navButton.TextScaled = true
-    navButton.Font = Enum.Font.SourceSans
+    navButton.Text = "" -- sin texto directo, usaremos hijos
     navButton.Parent = navBar
+    
+    -- Icono: para "Inicio" usamos la imagen que nos diste; otros usan emoji
+    if buttonData.view == "feed" then
+        local icon = Instance.new("ImageLabel")
+        icon.Name = "NavIcon"
+        icon.Size = UDim2.new(0, 36, 0, 36)
+        icon.Position = UDim2.new(0.5, -18, 0, 8)
+        icon.BackgroundTransparency = 1
+        icon.Image = "rbxassetid://120125722355552" -- <-- TU ASSET ID AQUI
+        icon.Parent = navButton
+        
+        local iconCorner = Instance.new("UICorner")
+        iconCorner.CornerRadius = UDim.new(0, 8)
+        iconCorner.Parent = icon
+    else
+        local iconLabel = Instance.new("TextLabel")
+        iconLabel.Name = "NavIcon"
+        iconLabel.Size = UDim2.new(1, 0, 0, 36)
+        iconLabel.Position = UDim2.new(0, 0, 0, 8)
+        iconLabel.BackgroundTransparency = 1
+        iconLabel.Text = buttonData.icon
+        iconLabel.TextColor3 = Color3.new(1, 1, 1)
+        iconLabel.TextScaled = true
+        iconLabel.Font = Enum.Font.SourceSans
+        iconLabel.Parent = navButton
+    end
+    
+    -- Etiqueta (nombre debajo del icono)
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NavLabel"
+    nameLabel.Size = UDim2.new(1, 0, 0, 30)
+    nameLabel.Position = UDim2.new(0, 0, 0, 50)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = buttonData.name
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.SourceSans
+    nameLabel.Parent = navButton
     
     navButtonInstances[buttonData.view] = navButton
     
@@ -346,6 +384,7 @@ for i, buttonData in ipairs(navButtons) do
         switchView(buttonData.view)
     end)
 end
+-- <<< FIN CAMBIO >>>
 
 -- Función para crear verificación dinámica
 local function createVerificationBadge(parent, isVerified, xOffset, yOffset)
@@ -844,7 +883,10 @@ function switchView(view)
     commentsSection.Visible = false
     musicSection.Visible = false
     
-    searchFrame.Visible = (view == "discover")
+    -- Controla la visibilidad de la barra de búsqueda y el logo.
+    local isDiscoverView = (view == "discover")
+    searchFrame.Visible = isDiscoverView
+    logoLabel.Visible = not isDiscoverView -- Oculta el logo si estamos en "Descubrir"
     
     for viewName, button in pairs(navButtonInstances) do
         button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -890,13 +932,18 @@ end
 
 -- Discover: búsqueda + recomendaciones
 function loadDiscoverPage()
+    -- <<< FIX >>>: limpiar títulos y resultados previos correctamente (evita duplicados)
     for _, child in pairs(discoverFrame:GetChildren()) do
-        if child.Name:match("UserResult") then
+        if child.Name:match("^UserResult") or child.Name == "SectionTitle" or child.Name == "NoRecs" or child.Name == "SearchTitle" then
             child:Destroy()
         end
     end
     
-    -- Título de sección
+    -- Título de sección (asegurar que solo exista uno)
+    if discoverFrame:FindFirstChild("SectionTitle") then
+        discoverFrame.SectionTitle:Destroy()
+    end
+    
     local sectionTitle = Instance.new("TextLabel")
     sectionTitle.Name = "SectionTitle"
     sectionTitle.Size = UDim2.new(1, 0, 0, 40)
@@ -914,6 +961,7 @@ function loadDiscoverPage()
                 createUserResultFrame(u, discoverFrame)
             end
         else
+            if discoverFrame:FindFirstChild("NoRecs") then discoverFrame.NoRecs:Destroy() end
             local empty = Instance.new("TextLabel")
             empty.Name = "NoRecs"
             empty.Size = UDim2.new(1, 0, 0, 60)
@@ -931,7 +979,8 @@ end
 -- Crear frame de resultado de usuario
 function createUserResultFrame(userData, parent)
     local resultFrame = Instance.new("Frame")
-    resultFrame.Name = "UserResult"
+    -- <<< FIX >>>: dar nombre único por usuario para evitar colisiones y facilitar limpieza
+    resultFrame.Name = "UserResult_" .. tostring(userData.userId)
     resultFrame.Size = UDim2.new(1, 0, 0, 80)
     resultFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     resultFrame.BorderSizePixel = 0
@@ -1036,8 +1085,9 @@ end
 
 -- Mostrar resultados de búsqueda
 function showSearchResults(results)
+    -- <<< FIX >>>: limpiar resultados previos y títulos antes de mostrar resultados de búsqueda
     for _, child in pairs(discoverFrame:GetChildren()) do
-        if child.Name:match("UserResult") then
+        if child.Name:match("^UserResult") or child.Name == "SectionTitle" or child.Name == "NoRecs" or child.Name == "SearchTitle" then
             child:Destroy()
         end
     end
@@ -1821,4 +1871,5 @@ function showMusicSelection()
     
     musicSection.CanvasSize = UDim2.new(0, 0, 0, musicLayout.AbsoluteContentSize.Y)
 end
+
 print("FaceBlox Client cargado correctamente - Plataforma completamente reparada")
