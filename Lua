@@ -1,4 +1,3 @@
-Agrega una nueva función para que los administradores puedan subir músicas. Entiende ahí en la sección de música, nada más tienen que poner el ID y el nombre. Hazlo todo desde el principio sin quitar nada de los códigos originales
 
 
 -- Server: FaceBlox (pegar en ServerScriptService)
